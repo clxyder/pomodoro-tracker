@@ -65,10 +65,12 @@ class TimerUI:
         time_frame.pack(pady=5, fill=tk.X)
 
         # Focus time setting
-        ttk.Label(time_frame, text="Focus time (minutes):").pack(side=tk.LEFT, padx=5)
+        focus_frame = ttk.Frame(time_frame)
+        focus_frame.pack(fill=tk.X, pady=2)
+        ttk.Label(focus_frame, text="Focus time (minutes):").pack(side=tk.LEFT, padx=5)
         self.focus_time_var = tk.StringVar(value=str(self.settings.get_focus_time()))
         self.focus_time_entry = ttk.Entry(
-            time_frame,
+            focus_frame,
             textvariable=self.focus_time_var,
             width=5
         )
@@ -77,10 +79,12 @@ class TimerUI:
         self.focus_time_entry.bind('<Return>', lambda e: self.save_time_settings())
 
         # Break time setting
-        ttk.Label(time_frame, text="Break time (minutes):").pack(side=tk.LEFT, padx=5)
+        break_frame = ttk.Frame(time_frame)
+        break_frame.pack(fill=tk.X, pady=2)
+        ttk.Label(break_frame, text="Break time (minutes):").pack(side=tk.LEFT, padx=5)
         self.break_time_var = tk.StringVar(value=str(self.settings.get_break_time()))
         self.break_time_entry = ttk.Entry(
-            time_frame,
+            break_frame,
             textvariable=self.break_time_var,
             width=5
         )
