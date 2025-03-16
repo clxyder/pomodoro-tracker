@@ -47,15 +47,10 @@ class PomodoroApp:
 
     def cleanup(self):
         """Clean up resources before exit"""
-        print("[DEBUG] Cleanup called")
         if hasattr(self, 'timer_ui'):
-            print("[DEBUG] Timer UI exists")
             self.timer_ui.running = False
             if hasattr(self.timer_ui, 'tray_icon') and self.timer_ui.tray_icon is not None and self.timer_ui.tray_icon_running:
-                print("[DEBUG] Stopping tray icon")
                 self.timer_ui.tray_icon.stop()
-            else:
-                print("[DEBUG] No tray icon to stop")
         self.root.quit()
 
     def on_system_unlock(self):
@@ -71,24 +66,16 @@ class PomodoroApp:
 
     def on_minimize(self, event=None):
         """Handle window minimize event"""
-        print("[DEBUG] on_minimize called - event widget:", event.widget if event else None)
-        print("[DEBUG] is_minimized state:", self.is_minimized)
-        print("[DEBUG] _minimizing state:", self._minimizing)
-        
         # Only process root window events and prevent re-entry
         if event and event.widget is self.root and not self._minimizing:
             self._minimizing = True  # Set flag to prevent re-entry
             try:
                 if not self.is_minimized:
-                    print("[DEBUG] Proceeding with minimize to tray")
+                    print("[DEBUG] Minimizing to tray")
                     self.is_minimized = True
                     self.timer_ui.minimize_to_tray()
-                else:
-                    print("[DEBUG] Already minimized, ignoring event")
             finally:
                 self._minimizing = False  # Reset flag
-        else:
-            print("[DEBUG] Skipping minimize - conditions not met")
 
     def run(self):
         """Start the application"""

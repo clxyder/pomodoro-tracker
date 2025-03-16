@@ -228,52 +228,32 @@ class TimerUI:
 
     def minimize_to_tray(self):
         """Minimize application to system tray"""
-        print("[DEBUG] minimize_to_tray called")
-        print("[DEBUG] tray_icon_running:", self.tray_icon_running)
         if self.tray_icon_running:
-            print("[DEBUG] Skipping minimize - tray already running")
             return
             
-        print("[DEBUG] Withdrawing window")
         self.root.withdraw()
-        print("[DEBUG] Creating new tray icon")
         self.tray_icon = self.create_tray_icon()
         self.tray_icon_running = True
-        print("[DEBUG] Starting tray icon thread")
         # Run the tray icon in a separate thread
         threading.Thread(target=self.run_tray, daemon=True).start()
 
     def run_tray(self):
         """Run the tray icon in a separate thread"""
-        print("[DEBUG] run_tray started")
         try:
             if self.tray_icon:
-                print("[DEBUG] Running tray icon")
                 self.tray_icon.run()
         except Exception as e:
             print(f"[DEBUG] Tray icon error: {e}")
             # If there's an error, make sure we clean up properly
             self.tray_icon = None
             self.tray_icon_running = False
-        finally:
-            print("[DEBUG] run_tray finally block")
-            print("[DEBUG] is_minimized state:", self.app.is_minimized)
-            if not self.app.is_minimized:
-                print("[DEBUG] Cleaning up tray icon")
-                self.tray_icon_running = False
-                self.tray_icon = None
 
     def show_window(self):
         """Show the main window"""
-        print("[DEBUG] show_window called")
-        print("[DEBUG] tray_icon_running:", self.tray_icon_running)
-        print("[DEBUG] tray_icon exists:", self.tray_icon is not None)
-        
         # First update the app state
         self.app.is_minimized = False
         
         if self.tray_icon_running and self.tray_icon:
-            print("[DEBUG] Stopping tray icon")
             try:
                 self.tray_icon.stop()
             except Exception as e:
@@ -282,15 +262,11 @@ class TimerUI:
                 self.tray_icon = None
                 self.tray_icon_running = False
                 
-        print("[DEBUG] Scheduling window show")
         self.root.after(100, self._show_window)  # Schedule window show on main thread
 
     def _show_window(self):
         """Actually show the window on the main thread"""
-        print("[DEBUG] _show_window called")
-        print("[DEBUG] is_minimized state:", self.app.is_minimized)
         if not self.app.is_minimized:
-            print("[DEBUG] Showing window")
             try:
                 self.root.deiconify()
                 self.root.lift()
@@ -299,17 +275,16 @@ class TimerUI:
                 self.root.state('normal')
             except Exception as e:
                 print(f"[DEBUG] Error showing window: {e}")
-        else:
-            print("[DEBUG] Skipping window show - still minimized")
 
     def quit_app(self):
         """Exit the application"""
-        print("[DEBUG] quit_app called")
         self.running = False
         self.app.is_minimized = False  # Reset minimized state
         if self.tray_icon_running and self.tray_icon:
-            print("[DEBUG] Stopping tray icon during quit")
-            self.tray_icon.stop()
+            try:
+                self.tray_icon.stop()
+            except Exception as e:
+                print(f"[DEBUG] Error stopping tray icon during quit: {e}")
             self.tray_icon = None
             self.tray_icon_running = False
         self.root.quit()
