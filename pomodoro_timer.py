@@ -4,6 +4,7 @@ from system_events import SystemEventHandler
 from settings import Settings
 import sys
 import threading
+import signal
 
 class PomodoroApp:
     def __init__(self):
@@ -28,6 +29,24 @@ class PomodoroApp:
         self.event_thread = threading.Thread(target=self.system_events.start_monitoring, daemon=True)
         self.event_thread.start()
 
+        # Setup signal handlers
+        signal.signal(signal.SIGINT, self.signal_handler)
+        signal.signal(signal.SIGTERM, self.signal_handler)
+
+    def signal_handler(self, signum, frame):
+        """Handle termination signals"""
+        print("\nReceived signal to terminate. Cleaning up...")
+        self.cleanup()
+        sys.exit(0)
+
+    def cleanup(self):
+        """Clean up resources before exit"""
+        if hasattr(self, 'timer_ui'):
+            self.timer_ui.running = False
+            if hasattr(self.timer_ui, 'tray_icon') and self.timer_ui.tray_icon.visible:
+                self.timer_ui.tray_icon.stop()
+        self.root.quit()
+
     def on_system_unlock(self):
         """Handler for system unlock event"""
         if self.settings.get_auto_start():
@@ -40,7 +59,10 @@ class PomodoroApp:
 
     def run(self):
         """Start the application"""
-        self.root.mainloop()
+        try:
+            self.root.mainloop()
+        except KeyboardInterrupt:
+            self.cleanup()
 
 if __name__ == "__main__":
     app = PomodoroApp()
