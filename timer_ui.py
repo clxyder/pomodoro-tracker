@@ -132,31 +132,61 @@ class TimerUI:
         """Handle timer completion"""
         self.play_notification_sound()
         self.show_notification()
-        
+
         if self.is_break:
             self.current_time = 25 * 60  # Work period
             self.is_break = False
+            message = "Break time is over! Time to focus for 25 minutes."
         else:
             self.current_time = 5 * 60  # Break period
             self.is_break = True
-            
+            message = "Well done! Take a 5-minute break."
+
+        # Show popup window
+        popup = tk.Toplevel(self.root)
+        popup.title("Timer Complete!")
+        popup.geometry("300x150")
+        popup.lift()  # Bring window to front
+
+        # Center the popup
+        popup.geometry(f"+{self.root.winfo_x() + 150}+{self.root.winfo_y() + 150}")
+
+        # Add message
+        ttk.Label(popup, text=message, wraplength=250, justify='center').pack(pady=20)
+
+        # Add dismiss button
+        ttk.Button(popup, text="OK", command=popup.destroy).pack()
+
+        # Auto-close after 5 seconds
+        popup.after(5000, popup.destroy)
+
         self.start_timer()
 
     def play_notification_sound(self):
         """Play notification sound"""
-        winsound.Beep(1000, 1000)
+        try:
+            # Cross-platform solution using system bell
+            self.root.bell()
+            self.root.update()
+        except:
+            pass  # Fallback if bell doesn't work
 
     def show_notification(self):
         """Show system notification"""
         title = "Break Time!" if not self.is_break else "Back to Work!"
-        message = "Time for a break!" if not self.is_break else "Break's over!"
-        
-        notification.notify(
-            title=title,
-            message=message,
-            app_icon=None,
-            timeout=10
-        )
+        message = ("Time for a 5-minute break!" if not self.is_break 
+                  else "Break's over! Let's focus for 25 minutes.")
+
+        try:
+            notification.notify(
+                title=title,
+                message=message,
+                app_icon=None,
+                timeout=10,
+                toast=True  # Windows toast notification
+            )
+        except Exception as e:
+            print(f"Failed to show notification: {e}")
 
     def minimize_to_tray(self):
         """Minimize application to system tray"""
