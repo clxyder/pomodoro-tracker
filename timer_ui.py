@@ -60,6 +60,35 @@ class TimerUI:
         self.settings_frame = ttk.LabelFrame(self.root, text="Settings")
         self.settings_frame.pack(pady=10, padx=10, fill=tk.X)
 
+        # Time settings
+        time_frame = ttk.Frame(self.settings_frame)
+        time_frame.pack(pady=5, fill=tk.X)
+
+        # Focus time setting
+        ttk.Label(time_frame, text="Focus time (minutes):").pack(side=tk.LEFT, padx=5)
+        self.focus_time_var = tk.StringVar(value=str(self.settings.get_focus_time()))
+        self.focus_time_entry = ttk.Entry(
+            time_frame,
+            textvariable=self.focus_time_var,
+            width=5
+        )
+        self.focus_time_entry.pack(side=tk.LEFT, padx=5)
+        self.focus_time_entry.bind('<FocusOut>', lambda e: self.save_time_settings())
+        self.focus_time_entry.bind('<Return>', lambda e: self.save_time_settings())
+
+        # Break time setting
+        ttk.Label(time_frame, text="Break time (minutes):").pack(side=tk.LEFT, padx=5)
+        self.break_time_var = tk.StringVar(value=str(self.settings.get_break_time()))
+        self.break_time_entry = ttk.Entry(
+            time_frame,
+            textvariable=self.break_time_var,
+            width=5
+        )
+        self.break_time_entry.pack(side=tk.LEFT, padx=5)
+        self.break_time_entry.bind('<FocusOut>', lambda e: self.save_time_settings())
+        self.break_time_entry.bind('<Return>', lambda e: self.save_time_settings())
+
+        # Auto-start setting
         self.auto_start_var = tk.BooleanVar(value=self.settings.get_auto_start())
         self.auto_start_check = ttk.Checkbutton(
             self.settings_frame,
@@ -105,7 +134,7 @@ class TimerUI:
         """Reset the timer"""
         self.running = False
         self.paused = False
-        self.current_time = 25 * 60
+        self.current_time = self.settings.get_focus_time() * 60
         self.is_break = False
         self.update_display()
         self.start_button.configure(state=tk.NORMAL)
@@ -134,13 +163,13 @@ class TimerUI:
         self.show_notification()
 
         if self.is_break:
-            self.current_time = 25 * 60  # Work period
+            self.current_time = self.settings.get_focus_time() * 60  # Work period
             self.is_break = False
-            message = "Break time is over! Time to focus for 25 minutes."
+            message = f"Break time is over! Time to focus for {self.settings.get_focus_time()} minutes."
         else:
-            self.current_time = 5 * 60  # Break period
+            self.current_time = self.settings.get_break_time() * 60  # Break period
             self.is_break = True
-            message = "Well done! Take a 5-minute break."
+            message = f"Well done! Take a {self.settings.get_break_time()}-minute break."
 
         # Show popup window
         popup = tk.Toplevel(self.root)
@@ -208,3 +237,22 @@ class TimerUI:
     def save_settings(self):
         """Save current settings"""
         self.settings.set_auto_start(self.auto_start_var.get())
+
+    def save_time_settings(self):
+        """Save focus and break time settings"""
+        try:
+            focus_time = int(self.focus_time_var.get())
+            break_time = int(self.break_time_var.get())
+
+            if focus_time > 0 and break_time > 0:
+                self.settings.set_focus_time(focus_time)
+                self.settings.set_break_time(break_time)
+                self.reset_timer()  # Reset timer with new duration
+            else:
+                # Reset to previous values if invalid
+                self.focus_time_var.set(str(self.settings.get_focus_time()))
+                self.break_time_var.set(str(self.settings.get_break_time()))
+        except ValueError:
+            # Reset to previous values if invalid
+            self.focus_time_var.set(str(self.settings.get_focus_time()))
+            self.break_time_var.set(str(self.settings.get_break_time()))
