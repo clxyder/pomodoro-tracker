@@ -23,7 +23,9 @@ class PomodoroApp:
         
         # Setup window behavior
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-        self.root.withdraw()  # Start minimized to system tray
+        
+        # Handle window minimize event
+        self.root.bind("<Unmap>", lambda e: self.on_minimize() if e.widget is self.root else None)
         
         # Start system event monitoring in a separate thread
         self.event_thread = threading.Thread(target=self.system_events.start_monitoring, daemon=True)
@@ -55,6 +57,11 @@ class PomodoroApp:
 
     def on_closing(self):
         """Handle window closing"""
+        self.cleanup()
+        self.root.destroy()
+
+    def on_minimize(self):
+        """Handle window minimize event"""
         self.timer_ui.minimize_to_tray()
 
     def run(self):
