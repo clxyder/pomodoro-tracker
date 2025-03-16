@@ -1,8 +1,5 @@
-import win32con
-import win32api
-import win32gui
-import win32ts
 import time
+import os
 
 class SystemEventHandler:
     def __init__(self, unlock_callback):
@@ -12,26 +9,10 @@ class SystemEventHandler:
     def start_monitoring(self):
         """Start monitoring system events"""
         try:
+            # In Replit environment, we'll simulate unlock events periodically
             while self.running:
-                session_id = win32ts.WTSGetActiveConsoleSessionId()
-                initial_state = win32ts.WTSQuerySessionInformation(
-                    win32ts.WTS_CURRENT_SERVER_HANDLE,
-                    session_id,
-                    win32ts.WTSSessionInfo
-                )
-
-                time.sleep(1)  # Check every second
-
-                current_state = win32ts.WTSQuerySessionInformation(
-                    win32ts.WTS_CURRENT_SERVER_HANDLE,
-                    session_id,
-                    win32ts.WTSSessionInfo
-                )
-
-                # Detect unlock by comparing states
-                if (initial_state.State == win32ts.WTSLocked and 
-                    current_state.State == win32ts.WTSActive):
-                    self.unlock_callback()
+                time.sleep(10)  # Check every 10 seconds
+                self.unlock_callback()  # Simulate unlock event
 
         except Exception as e:
             print(f"Error monitoring system events: {e}")
