@@ -7,6 +7,9 @@ import time
 import threading
 import winsound
 from io import BytesIO
+import logging
+
+logger = logging.getLogger(__name__)
 
 class TimerUI:
     def __init__(self, root, settings, app):
@@ -127,12 +130,15 @@ class TimerUI:
     def start_timer(self):
         """Start the timer"""
         if not self.running:
+            logger.debug("Starting countdown timer")
+            start_time = time.time()
             self.running = True
             self.paused = False
             self.start_button.configure(state=tk.DISABLED)
             self.pause_button.configure(state=tk.NORMAL)
             self.timer_thread = threading.Thread(target=self.timer_loop, daemon=True)
             self.timer_thread.start()
+            logger.debug("Timer thread started in %.3f seconds", time.time() - start_time)
 
     def pause_timer(self):
         """Pause/Resume the timer"""
@@ -151,6 +157,7 @@ class TimerUI:
 
     def timer_loop(self):
         """Main timer loop"""
+        logger.debug("Entering timer loop with %d seconds remaining", self.current_time)
         while self.running and self.current_time > 0:
             if not self.paused:
                 time.sleep(1)
@@ -158,6 +165,7 @@ class TimerUI:
                 self.update_display()
 
             if self.current_time <= 0:
+                logger.debug("Timer completed")
                 self.timer_complete()
 
     def update_display(self):
@@ -198,6 +206,7 @@ class TimerUI:
         # Auto-close after 5 seconds
         popup.after(5000, popup.destroy)
 
+        logger.debug("Timer completed, starting next timer phase (%s)", "focus" if not self.is_break else "break")
         self.start_timer()
 
     def play_notification_sound(self):
