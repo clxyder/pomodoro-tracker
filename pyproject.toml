@@ -7,5 +7,6 @@ dependencies = [
     "os-sys>=0.9.1",
     "pillow>=11.1.0",
     "plyer>=2.1.0",
+    "psutil>=7.0.0",
     "pystray>=0.19.5",
 ]

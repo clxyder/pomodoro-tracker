@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -1674,6 +1675,7 @@ dependencies = [
     { name = "os-sys" },
     { name = "pillow" },
     { name = "plyer" },
+    { name = "psutil" },
     { name = "pystray" },
 ]
 
@@ -1682,6 +1684,7 @@ requires-dist = [
     { name = "os-sys", specifier = ">=0.9.1" },
     { name = "pillow", specifier = ">=11.1.0" },
     { name = "plyer", specifier = ">=2.1.0" },
+    { name = "psutil", specifier = ">=7.0.0" },
     { name = "pystray", specifier = ">=0.19.5" },
 ]
 

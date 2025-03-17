@@ -1,7 +1,7 @@
 import time
 import os
-import ctypes
 import logging
+import psutil
 
 logger = logging.getLogger(__name__)
 
@@ -12,43 +12,15 @@ class SystemEventHandler:
         self.last_state = None  # Track last session state
 
     def is_user_logged_in(self):
-        """Check if user is logged in on Windows"""
+        """Check if Windows PC is unlocked by checking for absence of LogonUI.exe"""
         try:
-            # Windows constants for session state
-            WTS_CURRENT_SERVER_HANDLE = 0
-            WTS_CURRENT_SESSION = -1
-            WTSConnected = 1
-            WTSLock = 2
-            WTSLoggedOn = 3
-            WTSAvailable = 4
-            WTSActive = 5
-
-            # Get session info using Windows API
-            session_id = ctypes.c_ulong()
-            ctypes.windll.kernel32.WTSGetActiveConsoleSessionId()
-            
-            state = ctypes.c_ulong()
-            state_size = ctypes.c_ulong()
-            
-            result = ctypes.windll.wtsapi32.WTSQuerySessionInformationW(
-                WTS_CURRENT_SERVER_HANDLE,
-                WTS_CURRENT_SESSION,
-                WTSConnected,
-                ctypes.byref(state),
-                ctypes.byref(state_size)
-            )
-            
-            if result == 0:
-                logger.debug("Failed to query session state")
-                return False
-                
-            is_connected = bool(state.value)
-            ctypes.windll.wtsapi32.WTSFreeMemory(state)
-            
-            return is_connected
+            for proc in psutil.process_iter(['name']):
+                if proc.info['name'] == "LogonUI.exe":
+                    return False  # PC is locked
+            return True  # PC is unlocked
             
         except Exception as e:
-            logger.error("Error checking session state: %s", e)
+            logger.error("Error checking lock state: %s", e)
             return False
 
     def start_monitoring(self):
